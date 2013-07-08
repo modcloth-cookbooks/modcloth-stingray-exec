@@ -1,4 +1,4 @@
-name             'modcloth_stingray_exec'
+name             'modcloth-stingray-exec'
 maintainer       'ModCloth, Inc.'
 maintainer_email 'external.tools+modcloth-stingray-cookbook@modcloth.com'
 license          'Apache v2.0'
