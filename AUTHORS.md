@@ -6,4 +6,4 @@
 * Jake Ritorto
 * Rafe Colton
 
-<small>*alphabetical by first name, please*</small>
+<sub><sup>*alphabetically by first name, please*</sup></sub>

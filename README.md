@@ -9,7 +9,7 @@ Requirements
 ------------
 
 ```bash
-TODO: List cookbook requirements. Be sure to include any requirements this cookbook has on platforms, libraries, other cookbooks, packages, operating systems, etc.
+# TODO: List cookbook requirements. Be sure to include any requirements this cookbook has on platforms, libraries, other cookbooks, packages, operating systems, etc.
 ```
 
 Attributes
