@@ -1,0 +1,103 @@
+#!/usr/bin/env ruby
+
+system 'if ! which stingray-exec ; then gem install stingray-exec --no-rdoc --no-ri ; fi'
+if $? != 0
+  $stderr.puts 'Unable to install stingray-exec gem'
+  exit 1
+end
+
+require 'fileutils'
+require 'stingray/exec/dsl'
+include Stingray::Exec::DSL
+
+# NOTE: using p and n for pool and node to avoid namespace conflicts
+def usage
+  puts <<-EOB
+    Usage: stingray-exec <action> <pool> <node>
+
+    Valid actions: add_to_pool, add_and_drain, drain, undrain, disable, enable
+  EOB
+end
+
+def main(action, p, n)
+  valid_actions = %w(add_to_pool add_and_drain drain undrain disable enable)
+  if valid_actions.include?(action)
+    send(action.to_sym, p, n)
+  else
+    $stderr.puts "Invalid action: #{action}"
+    usage
+    exit 3
+  end
+end
+
+def active_nodes(p)
+  all_nodes = [*pool.get_nodes(p)[:nodes][:item][:item]]
+  disabled = pool.get_disabled_nodes(p)[:disabled_nodes][:item]
+  if disabled.has_key?(:item)
+    all_nodes -= [*disabled[:item]]
+  end
+  draining = pool.get_draining_nodes(p)[:values][:item]
+  if draining.has_key?(:item)
+    all_nodes -= [*draining[:item]]
+  end
+  all_nodes
+end
+
+def add_to_pool(p, n)
+  pool.add_nodes(p => [n])
+end
+
+def add_and_drain(p, n)
+  pool.add_nodes(p => [n])
+
+  if (active_nodes(p) - [n]).empty?
+    $stderr.puts "Refusing to drain #{n}, it is the only active node in the #{p} pool."
+    FileUtils.touch(ENV['STINGRAY_FAILURE_FILE']) if ENV['STINGRAY_FAILURE_FILE']
+  else
+    pool.set_draining_nodes(p => [n])
+  end
+end
+
+def drain(p, n)
+  if (active_nodes(p) - [n]).empty?
+    $stderr.puts "Refusing to drain #{n}, it is the only active node in the #{p} pool."
+    FileUtils.touch(ENV['STINGRAY_FAILURE_FILE']) if ENV['STINGRAY_FAILURE_FILE']
+  else
+    pool.set_draining_nodes(p => [n])
+  end
+end
+
+def undrain(p, n)
+  draining = pool.get_draining_nodes(p)[:values][:item]
+
+  if draining.has_key?(:item) && draining[:item].include?(n)
+    pool.remove_draining_nodes(p => [n])
+  end
+end
+
+def disable(p, n)
+  if active_nodes(p) - [n].empty?
+    $stderr.puts "Refusing to disable node #{n}, it is the only active node in the #{p} pool."
+    FileUtils.touch(ENV['STINGRAY_FAILURE_FILE']) if ENV['STINGRAY_FAILURE_FILE']
+  elsif active_nodes(p).include?(n)
+    pool.disable_nodes(p => [n])
+  end
+end
+
+def enable(p, n)
+  disabled = pool.get_disabled_nodes(p)[:disabled_nodes][:item]
+
+  if disabled.has_key?(:item) && disabled[:item].include?(n)
+    pool.enable_nodes(p => [n])
+  end
+end
+
+if $0 == __FILE__
+  if ARGV.count < 3
+    $stderr.puts "Not enough args. Requires 3, got #{ARGV.count}"
+    usage
+    exit 2
+  end
+
+  main(ARGV[0], ARGV[1], ARGV[2])
+end
