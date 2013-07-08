@@ -13,7 +13,7 @@ include Stingray::Exec::DSL
 # NOTE: using p and n for pool and node to avoid namespace conflicts
 def usage
   puts <<-EOB
-    Usage: stingray-exec <action> <pool> <node>
+    Usage: stingray-manage <action> <pool> <node>
 
     Valid actions: add_to_pool, add_and_drain, drain, undrain, disable, enable
   EOB
