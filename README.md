@@ -1,6 +1,8 @@
 modcloth-stingray Cookbook
 ==========================
 
+[![Build Status](https://travis-ci.org/modcloth-cookbooks/modcloth-stingray-exec.png?branch=master)](https://travis-ci.org/modcloth-cookbooks/modcloth-stingray-exec)
+
 ```bash
 # TODO: Enter the cookbook description here.
 ```
