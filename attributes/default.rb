@@ -4,3 +4,5 @@ default['install_prefix'] = (
     'smartos' => '/opt/local'
   }.fetch(node['platform'], '/usr/local')
 )
+
+default['stingray_exec']['version'] = '0.1.1'
