@@ -1,11 +1,5 @@
 #!/usr/bin/env ruby
 
-system 'if ! which stingray-exec ; then gem install stingray-exec --no-rdoc --no-ri ; fi'
-if $? != 0
-  $stderr.puts 'Unable to install stingray-exec gem'
-  exit 1
-end
-
 require 'fileutils'
 require 'stingray/exec/dsl'
 include Stingray::Exec::DSL
