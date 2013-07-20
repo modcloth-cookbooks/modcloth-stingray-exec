@@ -26,23 +26,34 @@ end
 
 def active_nodes(p)
   all_nodes = [*pool.get_nodes(p)[:nodes][:item][:item]]
+  all_nodes -= disabled_nodes(p)
+  all_nodes -= draining_nodes(p)
+end
+
+def disabled_nodes(p)
   disabled = pool.get_disabled_nodes(p)[:disabled_nodes][:item]
   if disabled.has_key?(:item)
-    all_nodes -= [*disabled[:item]]
+    [*disabled[:item]]
+  else
+    []
   end
+end
+
+def draining_nodes(p)
   draining = pool.get_draining_nodes(p)[:values][:item]
   if draining.has_key?(:item)
-    all_nodes -= [*draining[:item]]
+    [*draining[:item]]
+  else
+    []
   end
-  all_nodes
+end
+
+def node_is_draining?(p, n)
+  draining_nodes(p).include?(n)
 end
 
 def node_is_disabled?(p, n)
-  disabled = pool.get_disabled_nodes(p)[:disabled_nodes][:item]
-  return false unless disabled.has_key?(:item)
-  disabled_nodes = [*disabled[:item]]
-  return true if disabled_nodes.include?(n)
-  false
+  disabled_nodes(p).include?(n)
 end
 
 def add_to_pool(p, n)
@@ -52,7 +63,7 @@ end
 def add_and_drain(p, n)
   pool.add_nodes(p => [n])
 
-  if (active_nodes(p) - [n]).empty?
+  if node_should_fail_to_transition?(p, n)
     $stderr.puts "Refusing to drain #{n}, it is the only active node in the #{p} pool."
     FileUtils.touch(ENV['STINGRAY_FAILURE_FILE']) if ENV['STINGRAY_FAILURE_FILE']
   else
@@ -60,8 +71,16 @@ def add_and_drain(p, n)
   end
 end
 
+def node_should_fail_to_transition?(p, n)
+  if node_is_disabled?(p, n) || node_is_draining?(p, n) || (active_nodes(p) - [n]).empty?
+    true
+  else
+    false
+  end
+end
+
 def drain(p, n)
-  if (active_nodes(p) - [n]).empty?
+  if node_should_fail_to_transition?(p, n)
     $stderr.puts "Refusing to drain #{n}, it is the only active node in the #{p} pool."
     FileUtils.touch(ENV['STINGRAY_FAILURE_FILE']) if ENV['STINGRAY_FAILURE_FILE']
   else
@@ -70,15 +89,11 @@ def drain(p, n)
 end
 
 def undrain(p, n)
-  draining = pool.get_draining_nodes(p)[:values][:item]
-
-  if draining.has_key?(:item) && draining[:item].include?(n)
-    pool.remove_draining_nodes(p => [n])
-  end
+  pool.remove_draining_nodes(p => [n]) if node_is_draining?(p, n)
 end
 
 def disable(p, n)
-  if active_nodes(p) - [n].empty?
+  if node_should_fail_to_transition?(p, n)
     $stderr.puts "Refusing to disable node #{n}, it is the only active node in the #{p} pool."
     FileUtils.touch(ENV['STINGRAY_FAILURE_FILE']) if ENV['STINGRAY_FAILURE_FILE']
   elsif active_nodes(p).include?(n)
@@ -87,11 +102,7 @@ def disable(p, n)
 end
 
 def enable(p, n)
-  disabled = pool.get_disabled_nodes(p)[:disabled_nodes][:item]
-
-  if disabled.has_key?(:item) && disabled[:item].include?(n)
-    pool.enable_nodes(p => [n])
-  end
+  pool.enable_nodes(p => [n]) if node_is_disabled?(p, n)
 end
 
 if $0 == __FILE__
