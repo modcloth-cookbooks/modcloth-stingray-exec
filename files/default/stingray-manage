@@ -33,8 +33,8 @@ class StingrayManager
 
   def active_nodes
     all_nodes = [*pool.get_nodes(pool_name)[:nodes][:item][:item]]
-    all_nodes -= disabled_nodes(pool_name)
-    all_nodes -= draining_nodes(pool_name)
+    all_nodes -= disabled_nodes
+    all_nodes -= draining_nodes
   end
 
   def disabled_nodes
@@ -123,5 +123,5 @@ if $0 == __FILE__
     exit 2
   end
 
-  StingrayManager.new(ARGV[0], ARGV[1]).run(ARGV[2])
+  StingrayManager.new(ARGV[1], ARGV[2]).run(ARGV[0])
 end
