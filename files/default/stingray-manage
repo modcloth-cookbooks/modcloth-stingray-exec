@@ -2,17 +2,26 @@
 
 require 'fileutils'
 require 'stingray/exec/dsl'
-include Stingray::Exec::DSL
 
 class StingrayManager
-  attr_reader :pool_name, :node_name
+  include Stingray::Exec::DSL
 
-  def initialize(pool_name, node_name)
-    @pool_name = pool_name
-    @node_name = node_name
+  attr_reader :action, :pool_name, :node_name
+
+  def initialize(args = ARGV.freeze)
+    if args.count > 0 && %w(-h --help).include?(args[0])
+      usage
+      exit 0
+    elsif args.count < 3
+      $stderr.puts "Not enough args. Requires 3, got #{args.count}"
+      usage
+      exit 2
+    else
+      @action, @pool_name, @node_name = args
+    end
   end
 
-  def run(action)
+  def run
     if valid_actions.include?(action)
       send(action.to_sym)
     else
@@ -117,14 +126,5 @@ class StingrayManager
 end
 
 if $0 == __FILE__
-  if ARGV.count > 0 && %w(-h --help).include?(ARGV[0])
-    StingrayManager.new(nil, nil).usage
-    exit 0
-  elsif ARGV.count < 3
-    $stderr.puts "Not enough args. Requires 3, got #{ARGV.count}"
-    StingrayManager.new(nil, nil).usage
-    exit 2
-  end
-
-  StingrayManager.new(ARGV[1], ARGV[2]).run(ARGV[0])
+  StingrayManager.new.run
 end
