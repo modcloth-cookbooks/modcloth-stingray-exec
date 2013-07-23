@@ -126,5 +126,5 @@ class StingrayManager
 end
 
 if $0 == __FILE__
-  StingrayManager.new.run
+  StingrayManager.new(ARGV).run
 end
