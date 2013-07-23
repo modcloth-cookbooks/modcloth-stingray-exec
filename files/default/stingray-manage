@@ -13,7 +13,6 @@ class StingrayManager
   end
 
   def run(action)
-    valid_actions = %w(add_to_pool add_and_drain drain undrain disable enable)
     if valid_actions.include?(action)
       send(action.to_sym)
     else
@@ -27,8 +26,12 @@ class StingrayManager
     $stderr.puts <<-EOB
       Usage: stingray-exec <action> <pool> <node>
 
-      Valid actions: add_to_pool, add_and_drain, drain, undrain, disable, enable
+      Valid actions: #{valid_actions.join(', ')}
     EOB
+  end
+
+  def valid_actions
+    %w(add_to_pool add_and_drain drain undrain disable enable)
   end
 
   def active_nodes
