@@ -5,4 +5,4 @@ default['install_prefix'] = (
   }.fetch(node['platform'], '/usr/local')
 )
 
-default['stingray_exec']['version'] = '0.1.1'
+default['stingray_exec']['version'] = '0.2.0'
