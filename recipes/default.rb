@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: modcloth-stingray-exec
-# Recipe:: install
+# Recipe:: default
 #
 # Copyright 2013, ModCloth, Inc.
 #
@@ -23,14 +23,4 @@
 # SOFTWARE.
 #
 
-gem_package 'stingray-exec' do
-  version node['stingray_exec']['version']
-  gem_binary node['stingray_exec']['gem_binary']
-  options '--no-ri --no-rdoc'
-end
-
-template "#{node['install_prefix']}/bin/stingray-manage" do
-  cookbook 'modcloth-stingray-exec'
-  source 'stingray-manage.erb'
-  mode 0500
-end
+include_recipe 'modcloth-stingray-exec::install'
