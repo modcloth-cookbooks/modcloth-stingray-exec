@@ -15,7 +15,7 @@
       mode 0500
     end
 
-    bash 'run action' do
+    bash "run stingray-exec #{axn}" do
       code "#{node['install_prefix']}/bin/stingray-manage #{axn} #{new_resource.pool} #{new_resource.node}"
       user 'root'
       group 'root'
