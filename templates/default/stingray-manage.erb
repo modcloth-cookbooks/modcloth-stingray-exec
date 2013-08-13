@@ -86,7 +86,7 @@ class StingrayManager
       $stderr.puts "Refusing to drain #{node_name}, it is the only active node in the #{pool_name} pool."
       FileUtils.touch(ENV['STINGRAY_FAILURE_FILE']) if ENV['STINGRAY_FAILURE_FILE']
     else
-      pool.set_draining_nodes(pool_name => [node_name]) unless node_is_disabled?
+      pool.add_draining_nodes(pool_name => [node_name]) unless node_is_disabled?
     end
   end
 
@@ -103,7 +103,7 @@ class StingrayManager
       $stderr.puts "Refusing to drain #{node_name}, it is the only active node in the #{pool_name} pool."
       FileUtils.touch(ENV['STINGRAY_FAILURE_FILE']) if ENV['STINGRAY_FAILURE_FILE']
     else
-      pool.set_draining_nodes(pool_name => [node_name]) unless node_is_disabled?
+      pool.add_draining_nodes(pool_name => [node_name]) unless node_is_disabled?
     end
   end
 
